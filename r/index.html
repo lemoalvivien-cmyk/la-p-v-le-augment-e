@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recommandation Pévèle</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head><body class="bg-gradient-to-br from-amber-50 to-emerald-50 min-h-screen">
+<div class="max-w-md mx-auto p-6 pt-16 text-center">
+  <div class="text-6xl">🤝</div>
+  <h1 class="text-2xl font-bold mt-4">Recommandation Pévèle</h1>
+  <p id="msg" class="text-neutral-700 mt-3">Chargement...</p>
+  <a href="/leads/" class="mt-6 inline-block bg-neutral-900 text-white px-5 py-3 rounded-xl font-semibold">Voir les pros partenaires</a>
+</div>
+<script>
+const code = new URLSearchParams(location.search).get('c');
+if (code) {
+  document.cookie = `pvl_ref=${code}; path=/; max-age=7776000`;
+  fetch(`https://oqmqmhxbpirrtjgfhbcp.supabase.co/functions/v1/track-referral?code=${code}`).then(r=>r.json()).then(j=>{
+    document.getElementById('msg').textContent = j.ok
+      ? 'Vous êtes recommandé ! Votre prochain achat chez un pro Pévèle rapportera 15% à votre apporteur.'
+      : 'Code invalide ou expiré.';
+  });
+} else document.getElementById('msg').textContent = 'Code manquant.';
+</script></body></html>
