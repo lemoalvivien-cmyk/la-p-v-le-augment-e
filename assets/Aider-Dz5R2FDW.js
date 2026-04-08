@@ -1,0 +1,1 @@
+import{j as r,P as s}from"./index-Bgb5dlfE.js";import{W as t}from"./WizardDossier-C7p2J4gi.js";import"./camera-BEL_Z571.js";function a(){return r.jsxs(r.Fragment,{children:[r.jsx(s,{}),r.jsx(t,{typeAction:"aider"})]})}export{a as default};

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏘️</text></svg>" />
+
+    <!-- SEO primaire -->
+    <title>La Pévèle Augmentée — Vie locale, entraide et citoyenneté</title>
+    <meta name="description" content="La plateforme citoyenne de la Pévèle Carembault. Signalez un problème, proposez une idée, participez aux événements locaux. Gratuit, sans compte, directement à votre mairie." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://lapeveleaugmentee.fr/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://lapeveleaugmentee.fr/" />
+    <meta property="og:title" content="La Pévèle Augmentée — Vie locale, entraide et citoyenneté" />
+    <meta property="og:description" content="La plateforme citoyenne de la Pévèle Carembault. Signalez un problème, proposez une idée, participez aux événements locaux." />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="La Pévèle Augmentée" />
+    <meta name="twitter:description" content="La plateforme citoyenne de la Pévèle Carembault." />
+
+    <!-- Thème mobile -->
+    <meta name="theme-color" content="#FF6A00" />
+    <!-- Cloudflare Turnstile CAPTCHA -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script type="module" crossorigin src="/assets/index-Bgb5dlfE.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D2qlYfBc.css">
+    <script type="module">
+if (window.self === window.top) {
+  let lastPath = "";
+  function getPageNameFromPath(path) {
+    const segments = path.split("/").filter(Boolean);
+    return segments[0] || null;
+  }
+  function trackPageView() {
+    const path = window.location.pathname;
+    if (path === lastPath) return;
+    lastPath = path;
+    const pageName = getPageNameFromPath(path) || "home";
+    const appId = "";
+    if (!appId) return;
+    fetch(`/app-logs/${appId}/log-user-in-app/${pageName}`, {
+      method: "POST",
+    }).catch(() => {});
+  }
+  const originalPushState = history.pushState.bind(history);
+  history.pushState = function (...args) {
+    originalPushState(...args);
+    trackPageView();
+  };
+  const originalReplaceState = history.replaceState.bind(history);
+  history.replaceState = function (...args) {
+    originalReplaceState(...args);
+    trackPageView();
+  };
+  window.addEventListener("popstate", trackPageView);
+  trackPageView();
+}
+</script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
