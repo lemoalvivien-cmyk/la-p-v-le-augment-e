@@ -1,0 +1,47 @@
+HELLO_WORLD_TEST<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Devenir Pro — La Pévèle Augmentée</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head><body class="bg-gradient-to-br from-amber-50 to-rose-50 min-h-screen">
+<div class="max-w-xl mx-auto p-6 pt-16">
+  <a href="/" class="text-sm text-neutral-600">&larr; Accueil</a>
+  <h1 class="text-3xl font-bold mt-4">Rejoindre La Pévèle Augmentée — Pros</h1>
+  <p class="text-neutral-700 mt-2">Activez votre compte en 2 minutes et recevez vos premiers leads + commissions sur apport d'affaires.</p>
+  <div class="bg-white rounded-2xl shadow p-6 mt-6 space-y-4">
+    <div><label class="block text-sm font-medium">Nom de votre entreprise</label>
+      <input id="name" class="mt-1 w-full border rounded px-3 py-2" placeholder="Boulangerie du Carillon"></div>
+    <div><label class="block text-sm font-medium">Email pro</label>
+      <input id="email" type="email" class="mt-1 w-full border rounded px-3 py-2" placeholder="contact@..."></div>
+    <div><label class="block text-sm font-medium">Commune</label>
+      <input id="commune" class="mt-1 w-full border rounded px-3 py-2" placeholder="Orchies"></div>
+    <div><label class="block text-sm font-medium">Catégorie</label>
+      <select id="cat" class="mt-1 w-full border rounded px-3 py-2">
+        <option>Restauration</option><option>Artisan</option><option>Commerce</option>
+        <option>Services</option><option>Santé / Bien-être</option><option>Auto</option></select></div>
+    <button id="go" class="w-full bg-neutral-900 text-white rounded-xl py-3 font-semibold">Activer mon compte Stripe &rarr;</button>
+    <p id="msg" class="text-sm text-rose-600"></p>
+  </div>
+  <p class="text-xs text-neutral-500 mt-4">Gratuit. Commission plateforme : 8% sur apport d'affaires, 1.5% sur paiements standard.</p>
+</div>
+<script>
+const SB = supabase.createClient('https://oqmqmhxbpirrtjgfhbcp.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xbXFtaHhicGlycnRqZ2ZoYmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxODgwMzMsImV4cCI6MjA3NDc2NDAzM30.x5mmPn8KkBc1YqyrWWkKVFHM4xE4dvBi0bR3RRbeTBE');
+document.getElementById('go').onclick = async () => {
+  const msg = document.getElementById('msg'); msg.textContent = '';
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const commune = document.getElementById('commune').value.trim();
+  const categorie = document.getElementById('cat').value;
+  if (!name || !email) { msg.textContent='Nom et email requis'; return; }
+  const slug = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  const { data: pro, error } = await SB.from('pros').insert({ name, email, commune, categorie, slug }).select().single();
+  if (error) { msg.textContent = error.message; return; }
+  const res = await fetch('https://oqmqmhxbpirrtjgfhbcp.supabase.co/functions/v1/create-connect-link',{
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xbXFtaHhicGlycnRqZ2ZoYmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxODgwMzMsImV4cCI6MjA3NDc2NDAzM30.x5mmPn8KkBc1YqyrWWkKVFHM4xE4dvBi0bR3RRbeTBE'},
+    body: JSON.stringify({ pro_id: pro.id, email, return_url: 'https://lapeveleaugmentee.fr/pro/dashboard/?pro='+pro.id })
+  });
+  const j = await res.json();
+  if (j.url) location.href = j.url; else msg.textContent = j.error || 'Erreur Stripe';
+};
+</script></body></html>
