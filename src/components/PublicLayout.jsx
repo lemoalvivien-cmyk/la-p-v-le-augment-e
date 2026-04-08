@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import PublicAssistant from '@/components/PublicAssistant';
 import { Menu, X, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import PresenceBar from "@/components/PresenceBar";
 
 export default function PublicLayout() {
   const [open, setOpen] = useState(false);
@@ -13,6 +14,9 @@ export default function PublicLayout() {
   const navLinks = [
     { to: "/", label: "Accueil" },
     { to: "/agenda", label: "📅 Agenda" },
+    { to: "/soirees", label: "🎉 Soirées" },
+    { to: "/messagerie", label: "💬 Messages" },
+    { to: "/alertes", label: "🚨 Alertes" },
     { to: "/place-du-village", label: "🏘️ Place du village" },
     { to: "/a-propos", label: "À propos" },
   ];
@@ -147,6 +151,9 @@ export default function PublicLayout() {
         )}
       </header>
 
+      <div className="max-w-6xl mx-auto px-4 pt-3 w-full flex justify-center md:justify-end">
+        <PresenceBar />
+      </div>
       <main className="flex-1">
         <Outlet />
       </main>

@@ -42,6 +42,11 @@ const MonEspace = lazy(() => import('./pages/MonEspace'));
 const Victoires = lazy(() => import('./pages/Victoires'));
 const ServicesMairie = lazy(() => import('./pages/ServicesMairie'));
 
+// ── Sprint 1 — Vivant : Messagerie / Alertes / Soirées ───────────────────
+const Messagerie = lazy(() => import('./pages/Messagerie'));
+const Alertes = lazy(() => import('./pages/Alertes'));
+const Soirees = lazy(() => import('./pages/Soirees'));
+
 // ── Phase 1 — Lazy-loaded CDC V4 Supernova ────────────────────────────────
 const MairePlus = lazy(() => import('./pages/MairePlus'));
 const Sponsor = lazy(() => import('./pages/Sponsor'));
@@ -88,6 +93,7 @@ const PUBLIC_PATHS = [
   "/connexion", "/activation", "/activation-complete", "/a-propos", "/services",
   "/tableau-du-territoire", "/associations", "/emploi-business-local", "/observatoire",
   "/mairie-plus", "/sponsor",
+  "/messagerie", "/alertes", "/soirees",
   // Phase 2
   "/b2b", "/b2b/besoins", "/marketplace", "/rencontres", "/flash-date",
   "/rgpd", "/cookies", "/mentions-legales",
@@ -134,6 +140,10 @@ const AuthenticatedApp = () => {
       <Route path="/mon-suivi/:token" element={<MonSuivi />} />
       <Route path="/place-du-village" element={<PlaceVillage />} />
       <Route path="/agenda" element={<Agenda />} />
+      {/* Sprint 1 — Vivant */}
+      <Route path="/messagerie" element={<Messagerie />} />
+      <Route path="/alertes" element={<Alertes />} />
+      <Route path="/soirees" element={<Soirees />} />
       <Route path="/connexion" element={<Connexion />} />
       <Route path="/se-connecter" element={<SeConnecter />} />
       <Route path="/creer-un-compte" element={<CreerUnCompte />} />
