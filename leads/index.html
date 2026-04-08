@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketplace Leads — La Pévèle Augmentée</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head><body class="bg-neutral-50 min-h-screen">
+<header class="bg-white border-b"><div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+  <a href="/" class="font-bold">La Pévèle Augmentée — Marketplace Leads</a>
+  <a href="/pro/onboard/" class="text-sm bg-neutral-900 text-white px-3 py-1.5 rounded-lg">Devenir pro</a>
+</div></header>
+<main class="max-w-5xl mx-auto p-6">
+  <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+    <h2 class="font-semibold mb-3">Déposer un besoin (habitant)</h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      <input id="pemail" class="border rounded px-3 py-2" placeholder="votre email">
+      <input id="pcommune" class="border rounded px-3 py-2" placeholder="commune">
+      <input id="ptitre" class="border rounded px-3 py-2 md:col-span-2" placeholder="Titre du besoin (ex: plombier fuite salle de bain)">
+      <textarea id="pdesc" class="border rounded px-3 py-2 md:col-span-2" rows="3" placeholder="Description"></textarea>
+      <select id="pcat" class="border rounded px-3 py-2"><option>Artisan</option><option>Services</option><option>Auto</option><option>Santé</option><option>Autre</option></select>
+      <select id="purg" class="border rounded px-3 py-2"><option value="normal">Normal (5€/lead)</option><option value="urgent">Urgent (8€/lead)</option></select>
+    </div>
+    <button id="post" class="mt-4 bg-emerald-600 text-white px-5 py-2 rounded-xl font-semibold">Publier gratuitement</button>
+    <p id="pmsg" class="text-sm mt-2"></p>
+  </div>
+  <h2 class="font-semibold mb-3">Leads disponibles</h2>
+  <div id="list" class="grid md:grid-cols-2 gap-4"></div>
+</main>
+<script>
+const SB = supabase.createClient('https://oqmqmhxbpirrtjgfhbcp.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xbXFtaHhicGlycnRqZ2ZoYmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxODgwMzMsImV4cCI6MjA3NDc2NDAzM30.x5mmPn8KkBc1YqyrWWkKVFHM4xE4dvBi0bR3RRbeTBE');
+async function load(){
+  const { data } = await SB.from('leads_marketplace').select('*').eq('status','open').order('created_at',{ascending:false}).limit(40);
+  document.getElementById('list').innerHTML = (data||[]).map(l=>`
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <div class="flex justify-between items-start">
+        <div><div class="text-xs text-neutral-500">${l.categorie} · ${l.commune}</div>
+        <div class="font-semibold mt-1">${l.titre}</div></div>
+        ${l.urgence==='urgent'?'<span class="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">URGENT</span>':''}
+      </div>
+      <p class="text-sm text-neutral-700 mt-2">${l.description||''}</p>
+      <div class="mt-3 flex justify-between items-center">
+        <span class="text-lg font-bold">${(l.prix_lead_centimes/100).toFixed(0)} €</span>
+        <a href="/pro/onboard/" class="text-sm bg-neutral-900 text-white px-3 py-1.5 rounded-lg">Acheter ce lead</a>
+      </div>
+    </div>`).join('') || '<p class="text-neutral-500">Aucun lead en ce moment.</p>';
+}
+document.getElementById('post').onclick = async () => {
+  const m = document.getElementById('pmsg');
+  const payload = {
+    poster_email: document.getElementById('pemail').value.trim(),
+    commune: document.getElementById('pcommune').value.trim(),
+    titre: document.getElementById('ptitre').value.trim(),
+    description: document.getElementById('pdesc').value.trim(),
+    categorie: document.getElementById('pcat').value,
+    urgence: document.getElementById('purg').value,
+    prix_lead_centimes: document.getElementById('purg').value==='urgent'?800:500
+  };
+  if (!payload.poster_email || !payload.titre) { m.textContent='Email + titre requis'; return; }
+  const { error } = await SB.from('leads_marketplace').insert(payload);
+  m.textContent = error ? error.message : '✓ Besoin publié — les pros du territoire vont être notifiés.';
+  if (!error) load();
+};
+load();
+</script></body></html>
