@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mon Dashboard Pro — La Pévèle Augmentée</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head><body class="bg-neutral-50 min-h-screen">
+<header class="bg-white border-b"><div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+  <a href="/" class="font-bold">La Pévèle Augmentée — Pro</a>
+  <span id="proName" class="text-sm text-neutral-600"></span>
+</div></header>
+<main class="max-w-5xl mx-auto p-6 space-y-6">
+  <div class="grid md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-xs text-neutral-500">CA généré</div><div id="kCa" class="text-2xl font-bold mt-1">—</div></div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-xs text-neutral-500">Commissions reçues</div><div id="kComm" class="text-2xl font-bold mt-1">—</div></div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-xs text-neutral-500">Apports convertis</div><div id="kRef" class="text-2xl font-bold mt-1">—</div></div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-xs text-neutral-500">Statut Stripe</div><div id="kStripe" class="text-lg font-semibold mt-1">—</div></div>
+  </div>
+  <section class="bg-white rounded-2xl shadow-sm p-6">
+    <h2 class="font-semibold mb-3">Mon QR d'apport d'affaires</h2>
+    <p class="text-sm text-neutral-600 mb-4">Donnez ce QR à vos clients. Chaque vente qu'ils déclenchent chez un autre pro partenaire vous verse 15% de commission.</p>
+    <div class="flex gap-6 items-center">
+      <canvas id="qr"></canvas>
+      <div>
+        <div class="text-xs text-neutral-500">Votre lien</div>
+        <code id="refUrl" class="text-sm bg-neutral-100 px-2 py-1 rounded"></code>
+        <div class="mt-3"><button id="newRef" class="px-3 py-1.5 text-sm rounded-lg bg-neutral-900 text-white">Générer un nouveau code</button></div>
+      </div>
+    </div>
+  </section>
+  <section class="bg-white rounded-2xl shadow-sm p-6">
+    <h2 class="font-semibold mb-3">Dernières transactions</h2>
+    <div id="txList" class="text-sm divide-y"></div>
+  </section>
+</main>
+<script>
+const SB = supabase.createClient('https://oqmqmhxbpirrtjgfhbcp.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xbXFtaHhicGlycnRqZ2ZoYmNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxODgwMzMsImV4cCI6MjA3NDc2NDAzM30.x5mmPn8KkBc1YqyrWWkKVFHM4xE4dvBi0bR3RRbeTBE');
+const fmt = c => (c/100).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
+const proId = new URLSearchParams(location.search).get('pro');
+async function load(){
+  if (!proId) { document.body.innerHTML = '<p class=p-10>Accès direct interdit. <a href=/pro/onboard>S\\'inscrire</a></p>'; return; }
+  const { data: pro } = await SB.from('pros').select('*').eq('id', proId).single();
+  if (!pro) return;
+  document.getElementById('proName').textContent = pro.name;
+  document.getElementById('kCa').textContent = fmt(pro.total_ca_genere_centimes||0);
+  document.getElementById('kComm').textContent = fmt(pro.total_commissions_recues_centimes||0);
+  document.getElementById('kStripe').textContent = pro.stripe_charges_enabled ? '✓ Actif' : '⏳ À compléter';
+  document.getElementById('kStripe').className = 'text-lg font-semibold mt-1 ' + (pro.stripe_charges_enabled?'text-emerald-600':'text-amber-600');
+  const { data: refs } = await SB.from('referrals').select('id').eq('apporteur_pro_id', proId).eq('status','converted');
+  document.getElementById('kRef').textContent = (refs||[]).length;
+  const { data: txs } = await SB.from('transactions').select('*').eq('pro_id', proId).order('created_at',{ascending:false}).limit(10);
+  document.getElementById('txList').innerHTML = (txs||[]).map(t=>`<div class="py-2 flex justify-between"><span>${new Date(t.created_at).toLocaleDateString('fr-FR')}</span><span class="font-medium">${fmt(t.amount_centimes)}</span><span class="text-neutral-500">frais ${fmt(t.application_fee_centimes)}</span></div>`).join('') || '<p class="text-neutral-500">Aucune transaction pour l\\'instant.</p>';
+  let { data: ref } = await SB.from('referrals').select('*').eq('apporteur_pro_id', proId).eq('status','pending').limit(1).maybeSingle();
+  if (!ref) { const code = 'PVL-' + Math.random().toString(36).slice(2,8).toUpperCase();
+    const { data } = await SB.from('referrals').insert({ apporteur_pro_id: proId, code }).select().single(); ref = data; }
+  const url = `https://lapeveleaugmentee.fr/r/?c=${ref.code}`;
+  document.getElementById('refUrl').textContent = url;
+  QRCode.toCanvas(document.getElementById('qr'), url, { width: 180 });
+}
+document.getElementById('newRef').onclick = async () => {
+  const code = 'PVL-' + Math.random().toString(36).slice(2,8).toUpperCase();
+  await SB.from('referrals').insert({ apporteur_pro_id: proId, code }); load();
+};
+load();
+</script></body></html>
