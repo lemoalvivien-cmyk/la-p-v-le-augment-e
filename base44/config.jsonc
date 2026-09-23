@@ -1,0 +1,9 @@
+{
+  "name": "La P\u00e9v\u00e8le Augment\u00e9e",
+  "site": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist"
+  }
+}
